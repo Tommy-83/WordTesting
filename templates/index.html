@@ -23,6 +23,31 @@
             </div>
         {% endif %}
 
+        {% if grid %}
+            <div class="row">
+                <div class="col-md-12">
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                {% for letter in range(WORD_LENGTH) %}
+                                    <th>{{ letter|ascii_uppercase }}</th>
+                                {% endfor %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for row in grid %}
+                                <tr>
+                                    {% for cell in row %}
+                                        <td class="grid-cell" style="background-color: {{ cell.color }};">{{ cell.letter }}</td>
+                                    {% endfor %}
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        {% endif %}
+
         <form method="POST" action="/">
             <div class="form-group">
                 <label for="guess">Enter your guess:</label>
