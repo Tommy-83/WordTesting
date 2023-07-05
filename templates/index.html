@@ -9,6 +9,7 @@
             height: 30px;
             text-align: center;
             padding: 5px;
+            background-color: {% if cell.color %}{{ cell.color }}{% else %}transparent{% endif %};
         }
     </style>
 </head>
@@ -38,7 +39,7 @@
                             {% for row in grid %}
                                 <tr>
                                     {% for cell in row %}
-                                        <td class="grid-cell" style="background-color: {{ cell.color }};">{{ cell.letter }}</td>
+                                        <td class="grid-cell">{{ cell.letter }}</td>
                                     {% endfor %}
                                 </tr>
                             {% endfor %}
