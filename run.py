@@ -1,6 +1,8 @@
 from flask import Flask, render_template, request, jsonify
 import random
+import time
 from datetime import datetime, timedelta
+from termcolor import colored
 
 app = Flask(__name__)
 
@@ -22,6 +24,28 @@ def generate_word():
     return random.choice(word_list)
 
 
+# Function to display the game grid
+def display_grid(grid, elapsed_time, reveal_word):
+    print("    " + " ".join(colored(chr(65+i), 'white') for i in range(WORD_LENGTH)))
+    print("  +" + "---+" * WORD_LENGTH)
+
+    for row in grid:
+        colored_row = []
+        for letter in row:
+            if letter['visible']:
+                colored_row.append(colored(letter['letter'], letter['color'], 'on_grey'))
+            else:
+                colored_row.append(colored("_", 'white', 'on_grey'))
+        print("  | " + " | ".join(colored_row) + " |")
+        print("  +" + "---+" * WORD_LENGTH)
+
+    print()
+    print("Time Elapsed: {} minutes {} seconds".format(elapsed_time.seconds // 60, elapsed_time.seconds % 60))
+
+    if reveal_word:
+        print("The word was:", reveal_word)
+
+
 # Function to check the correctness of the guess
 def check_guess(guess, target_word):
     feedback = []
@@ -35,40 +59,6 @@ def check_guess(guess, target_word):
     return feedback
 
 
-# Function to play the game
-def play_game():
-    target_word = generate_word()
-    attempts = 0
-    grid = []
-    start_time = datetime.now()
-    end_time = start_time + timedelta(seconds=TIMER_DURATION)
-
-    while attempts < MAX_ATTEMPTS and datetime.now() <= end_time:
-        guess = request.form.get('guess')
-
-        if len(guess) != WORD_LENGTH:
-            response = {'error': 'Invalid guess. Guess should be {} letters long.'.format(WORD_LENGTH)}
-            return jsonify(response)
-
-        feedback = check_guess(guess, target_word)
-        grid.append(feedback)
-
-        if feedback == [{'letter': guess[i], 'color': 'green', 'visible': True} for i in range(WORD_LENGTH)]:
-            elapsed_time = datetime.now() - start_time
-            response = {'message': 'Congratulations! You guessed the word.', 'grid': grid, 'elapsed_time': elapsed_time.seconds}
-            return jsonify(response)
-
-        attempts += 1
-
-    elapsed_time = datetime.now() - start_time
-    if attempts == MAX_ATTEMPTS:
-        response = {'message': 'Sorry, you have used all your attempts.', 'grid': grid, 'elapsed_time': elapsed_time.seconds}
-        return jsonify(response)
-    elif datetime.now() > end_time:
-        response = {'message': 'Sorry, you ran out of time.', 'grid': grid, 'elapsed_time': elapsed_time.seconds}
-        return jsonify(response)
-
-
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -76,9 +66,34 @@ def index():
 
 @app.route('/play', methods=['POST'])
 def play():
-    response = play_game()
-    return response
+    target_word = generate_word()
+    attempts = 0
+    grid = []
+    start_time = datetime.now()
+    end_time = start_time + timedelta(seconds=TIMER_DURATION)
+
+    while attempts < MAX_ATTEMPTS and datetime.now() <= end_time:
+        elapsed_time = datetime.now() - start_time
+
+        guess = request.form['guess']
+        if len(guess) != WORD_LENGTH:
+            return jsonify({'error': f'Invalid guess. Guess should be {WORD_LENGTH} letters long.'})
+
+        feedback = check_guess(guess, target_word)
+        grid.append(feedback)
+
+        if feedback == [{'letter': guess[i], 'color': 'green', 'visible': True} for i in range(WORD_LENGTH)]:
+            elapsed_time = datetime.now() - start_time
+            return jsonify({'grid': grid, 'message': 'Congratulations! You guessed the word.'})
+
+        attempts += 1
+
+    elapsed_time = datetime.now() - start_time
+    if attempts == MAX_ATTEMPTS:
+        return jsonify({'grid': grid, 'message': 'Sorry, you have used all your attempts.'})
+    elif datetime.now() > end_time:
+        return jsonify({'grid': grid, 'message': 'Sorry, you ran out of time.'})
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run()
