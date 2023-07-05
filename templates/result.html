@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Wordle Game</title>
+</head>
+<body>
+    <h1>Wordle Result</h1>
+    <p>{{ message }}</p>
+
+    {% if grid %}
+    <table>
+        <tr>
+            {% for i in range(WORD_LENGTH) %}
+                <th>{{ chr(65+i) }}</th>
+            {% endfor %}
+        </tr>
+        {% for row in grid %}
+            <tr>
+                {% for letter in row %}
+                    {% if letter.visible %}
+                        <td style="background-color:{{ letter.color }}">{{ letter.letter }}</td>
+                    {% else %}
+                        <td>_</td>
+                    {% endif %}
+                {% endfor %}
+            </tr>
+        {% endfor %}
+    </table>
+    {% endif %}
+
+    <p>Time Elapsed: {{ elapsed_time.seconds // 60 }} minutes {{ elapsed_time.seconds % 60 }} seconds</p>
+
+    {% if reveal_word %}
+    <p>The word was: {{ reveal_word }}</p>
+    {% endif %}
+
+    <p>Do you want to play again? <a href="/">Play Again</a></p>
+</body>
+</html>
+
+
+
+
