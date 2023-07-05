@@ -1,22 +1,35 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Wordle Game</title>
+    <title>Wordle</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <style>
+        .grid-cell {
+            width: 30px;
+            height: 30px;
+            text-align: center;
+            padding: 5px;
+        }
+    </style>
 </head>
 <body>
-    <h1>Welcome to Wordle!</h1>
-    <h2>Guess the five-letter word.</h2>
-    <p>You have {{ max_attempts }} attempts.</p>
-    <p>You have 3 minutes to complete the game.</p>
+    <div class="container">
+        <h1>Wordle</h1>
+        <p>Guess the five-letter word.</p>
 
-    {% if message %}
-    <p>{{ message }}</p>
-    {% endif %}
+        {% if message %}
+            <div class="alert alert-danger">
+                {{ message }}
+            </div>
+        {% endif %}
 
-    <form method="POST" action="/">
-        <label for="guess">Enter your guess:</label>
-        <input type="text" id="guess" name="guess" minlength="5" maxlength="5" required>
-        <input type="submit" value="Submit">
-    </form>
+        <form method="POST" action="/">
+            <div class="form-group">
+                <label for="guess">Enter your guess:</label>
+                <input type="text" class="form-control" id="guess" name="guess" maxlength="5" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Submit</button>
+        </form>
+    </div>
 </body>
 </html>
