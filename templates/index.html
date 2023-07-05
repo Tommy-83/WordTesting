@@ -1,61 +1,20 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Wordle</title>
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
-    <style>
-        .grid-cell {
-            width: 30px;
-            height: 30px;
-            text-align: center;
-            padding: 5px;
-            background-color: {% if cell.color %}{{ cell.color }}{% else %}transparent{% endif %};
-        }
-    </style>
+    <title>Wordle Game</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <div class="container">
-        <h1>Wordle</h1>
-        <p>Guess the five-letter word.</p>
+    <h1>Welcome to Wordle!</h1>
+    <p>Guess the five-letter word.</p>
+    <p>You have 6 attempts.</p>
+    <p>You have 3 minutes to complete the game.</p>
+    
+    <form method="POST" action="/">
+        <input type="submit" value="Play" class="play-button">
+    </form>
 
-        {% if message %}
-            <div class="alert alert-danger">
-                {{ message }}
-            </div>
-        {% endif %}
-
-        {% if grid %}
-            <div class="row">
-                <div class="col-md-12">
-                    <table class="table table-bordered">
-                        <thead>
-                            <tr>
-                                {% for letter in range(WORD_LENGTH) %}
-                                    <th>{{ letter|ascii_uppercase }}</th>
-                                {% endfor %}
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for row in grid %}
-                                <tr>
-                                    {% for cell in row %}
-                                        <td class="grid-cell">{{ cell.letter }}</td>
-                                    {% endfor %}
-                                </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        {% endif %}
-
-        <form method="POST" action="/">
-            <div class="form-group">
-                <label for="guess">Enter your guess:</label>
-                <input type="text" class="form-control" id="guess" name="guess" maxlength="5" required>
-            </div>
-            <button type="submit" class="btn btn-primary">Submit</button>
-        </form>
-    </div>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 </html>
+
