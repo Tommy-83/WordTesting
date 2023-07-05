@@ -1,22 +1,58 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Wordle</title>
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}">
+    <title>Wordle Game</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
+    <h1>Wordle Game</h1>
     <div id="game-container">
-        <h1>Wordle</h1>
-        <div id="grid"></div>
-        <form id="guess-form">
-            <input type="text" id="guess-input" placeholder="Enter your guess">
-            <button type="submit" id="play-button">Play</button>
-        </form>
-        <div id="message"></div>
-        <div id="timer"></div>
+        <div id="grid-container">
+            <table>
+                <thead>
+                    <tr>
+                        {% for i in range(WORD_LENGTH) %}
+                            <th>{{ chr(65+i) }}</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in grid %}
+                        <tr>
+                            {% for letter in row %}
+                                <td class="{{ letter.color }} {% if letter.visible %}visible{% endif %}">
+                                    {% if letter.visible %}{{ letter.letter }}{% else %}_{% endif %}
+                                </td>
+                            {% endfor %}
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div id="game-info">
+            <p>Time Elapsed: {{ elapsed_time.seconds // 60 }} minutes {{ elapsed_time.seconds % 60 }} seconds</p>
+            {% if message %}
+                <p>{{ message }}</p>
+            {% endif %}
+            {% if error %}
+                <p class="error">{{ error }}</p>
+            {% endif %}
+        </div>
+        <div id="game-input">
+            {% if attempts < MAX_ATTEMPTS and datetime.now() <= end_time %}
+                <form method="post" action="{{ url_for('play') }}">
+                    <input type="text" name="guess" placeholder="Enter your guess">
+                    <button type="submit">Play</button>
+                </form>
+            {% else %}
+                <p>Game Over</p>
+                <p>Target Word: {{ target_word }}</p>
+                <form method="post" action="{{ url_for('play') }}">
+                    <button type="submit">Play Again</button>
+                </form>
+            {% endif %}
+        </div>
     </div>
-
-    <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 </html>
 

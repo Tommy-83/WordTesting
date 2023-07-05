@@ -24,28 +24,6 @@ def generate_word():
     return random.choice(word_list)
 
 
-# Function to display the game grid
-def display_grid(grid, elapsed_time, reveal_word):
-    print("    " + " ".join(colored(chr(65+i), 'white') for i in range(WORD_LENGTH)))
-    print("  +" + "---+" * WORD_LENGTH)
-
-    for row in grid:
-        colored_row = []
-        for letter in row:
-            if letter['visible']:
-                colored_row.append(colored(letter['letter'], letter['color'], 'on_grey'))
-            else:
-                colored_row.append(colored("_", 'white', 'on_grey'))
-        print("  | " + " | ".join(colored_row) + " |")
-        print("  +" + "---+" * WORD_LENGTH)
-
-    print()
-    print("Time Elapsed: {} minutes {} seconds".format(elapsed_time.seconds // 60, elapsed_time.seconds % 60))
-
-    if reveal_word:
-        print("The word was:", reveal_word)
-
-
 # Function to check the correctness of the guess
 def check_guess(guess, target_word):
     feedback = []
@@ -84,16 +62,16 @@ def play():
 
         if feedback == [{'letter': guess[i], 'color': 'green', 'visible': True} for i in range(WORD_LENGTH)]:
             elapsed_time = datetime.now() - start_time
-            return jsonify({'grid': grid, 'message': 'Congratulations! You guessed the word.'})
+            return jsonify({'grid': grid, 'message': 'Congratulations! You guessed the word.', 'elapsed_time': elapsed_time.seconds})
 
         attempts += 1
 
     elapsed_time = datetime.now() - start_time
     if attempts == MAX_ATTEMPTS:
-        return jsonify({'grid': grid, 'message': 'Sorry, you have used all your attempts.'})
+        return jsonify({'grid': grid, 'message': 'Sorry, you have used all your attempts.', 'elapsed_time': elapsed_time.seconds})
     elif datetime.now() > end_time:
-        return jsonify({'grid': grid, 'message': 'Sorry, you ran out of time.'})
+        return jsonify({'grid': grid, 'message': 'Sorry, you ran out of time.', 'elapsed_time': elapsed_time.seconds})
 
 
 if __name__ == '__main__':
-    app.run()
+    app.run(debug=True)
