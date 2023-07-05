@@ -2,57 +2,52 @@
 <html>
 <head>
     <title>Wordle Game</title>
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        table {
+            border-collapse: collapse;
+        }
+
+        td {
+            border: 1px solid black;
+            width: 30px;
+            height: 30px;
+            text-align: center;
+        }
+    </style>
 </head>
 <body>
-    <h1>Wordle Game</h1>
-    <div id="game-container">
-        <div id="grid-container">
-            <table>
-                <thead>
-                    <tr>
-                        {% for i in range(WORD_LENGTH) %}
-                            <th>{{ chr(65+i) }}</th>
-                        {% endfor %}
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for row in grid %}
-                        <tr>
-                            {% for letter in row %}
-                                <td class="{{ letter.color }} {% if letter.visible %}visible{% endif %}">
-                                    {% if letter.visible %}{{ letter.letter }}{% else %}_{% endif %}
-                                </td>
-                            {% endfor %}
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-        <div id="game-info">
-            <p>Time Elapsed: {{ elapsed_time.seconds // 60 }} minutes {{ elapsed_time.seconds % 60 }} seconds</p>
-            {% if message %}
-                <p>{{ message }}</p>
-            {% endif %}
-            {% if error %}
-                <p class="error">{{ error }}</p>
-            {% endif %}
-        </div>
-        <div id="game-input">
-            {% if attempts < MAX_ATTEMPTS and datetime.now() <= end_time %}
-                <form method="post" action="{{ url_for('play') }}">
-                    <input type="text" name="guess" placeholder="Enter your guess">
-                    <button type="submit">Play</button>
-                </form>
-            {% else %}
-                <p>Game Over</p>
-                <p>Target Word: {{ target_word }}</p>
-                <form method="post" action="{{ url_for('play') }}">
-                    <button type="submit">Play Again</button>
-                </form>
-            {% endif %}
-        </div>
-    </div>
+    <h1>Welcome to Wordle!</h1>
+    <h3>Guess the five-letter word.</h3>
+    <h3>You have {{ max_attempts }} attempts.</h3>
+    <h3>You have 3 minutes to complete the game.</h3>
+
+    <table>
+        <tr>
+            {% for letter in letters %}
+                <td>{{ letter }}</td>
+            {% endfor %}
+        </tr>
+        {% for row in grid %}
+            <tr>
+                {% for cell in row %}
+                    <td style="background-color:{{ cell.color }};">{{ cell.letter }}</td>
+                {% endfor %}
+            </tr>
+        {% endfor %}
+    </table>
+
+    <h3>Time Elapsed: {{ elapsed_time }} minutes {{ elapsed_time % 60 }} seconds</h3>
+
+    {% if message %}
+        <h3>{{ message }}</h3>
+    {% endif %}
+
+    <form method="POST" action="/play">
+        <label for="guess">Enter your guess:</label>
+        <input type="text" id="guess" name="guess" maxlength="5" required>
+        <br>
+        <button type="submit">Submit</button>
+    </form>
 </body>
 </html>
 

@@ -1,5 +1,6 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, jsonify
 import random
+import os
 from datetime import datetime, timedelta
 from termcolor import colored
 
@@ -23,28 +24,6 @@ def generate_word():
     return random.choice(word_list)
 
 
-# Function to display the game grid
-def display_grid(grid, elapsed_time, reveal_word):
-    print("    " + " ".join(colored(chr(65+i), 'white') for i in range(WORD_LENGTH)))
-    print("  +" + "---+" * WORD_LENGTH)
-
-    for row in grid:
-        colored_row = []
-        for letter in row:
-            if letter['visible']:
-                colored_row.append(colored(letter['letter'], letter['color'], 'on_grey'))
-            else:
-                colored_row.append(colored("_", 'white', 'on_grey'))
-        print("  | " + " | ".join(colored_row) + " |")
-        print("  +" + "---+" * WORD_LENGTH)
-
-    print()
-    print("Time Elapsed: {} minutes {} seconds".format(elapsed_time.seconds // 60, elapsed_time.seconds % 60))
-
-    if reveal_word:
-        print("The word was:", reveal_word)
-
-
 # Function to check the correctness of the guess
 def check_guess(guess, target_word):
     feedback = []
@@ -58,57 +37,55 @@ def check_guess(guess, target_word):
     return feedback
 
 
-# Function to play the game
-def play_game():
+# Route for the home page
+@app.route('/')
+def home():
+    return render_template('index.html')
+
+
+# Route for playing the game
+@app.route('/play', methods=['POST'])
+def play():
     target_word = generate_word()
     attempts = 0
-    start_time = datetime.now()
-
     grid = []
-    for _ in range(WORD_LENGTH):
-        grid.append({'letter': '', 'color': 'white', 'visible': False})
+    start_time = datetime.now()
+    end_time = start_time + timedelta(seconds=TIMER_DURATION)
 
-    while True:
-        display_grid(grid, datetime.now() - start_time, "")
-        guess = input("Enter your guess: ").upper()
-
-        if guess == "QUIT":
-            break
-
-        if guess == "REVEAL":
-            display_grid(grid, datetime.now() - start_time, target_word)
-            break
+    while attempts < MAX_ATTEMPTS and datetime.now() <= end_time:
+        elapsed_time = datetime.now() - start_time
+        guess = request.form['guess'].lower()
 
         if len(guess) != WORD_LENGTH:
-            print("Invalid guess! Guess word should be {} letters long.".format(WORD_LENGTH))
-            continue
+            return jsonify({'message': 'Invalid guess. Guess should be {} letters long.'.format(WORD_LENGTH)})
 
-        attempts += 1
         feedback = check_guess(guess, target_word)
+        grid.append(feedback)
 
         if feedback == [{'letter': guess[i], 'color': 'green', 'visible': True} for i in range(WORD_LENGTH)]:
-            display_grid(grid, datetime.now() - start_time, target_word)
-            print("Congratulations! You guessed the word correctly.")
-            break
+            elapsed_time = datetime.now() - start_time
+            return jsonify({
+                'message': 'Congratulations! You guessed the word.',
+                'grid': grid,
+                'elapsed_time': elapsed_time.seconds
+            })
 
-        if attempts >= MAX_ATTEMPTS:
-            display_grid(grid, datetime.now() - start_time, target_word)
-            print("You ran out of attempts. Better luck next time!")
-            break
+        attempts += 1
 
-        for i in range(WORD_LENGTH):
-            if not grid[i]['visible']:
-                grid[i]['letter'] = guess[i]
-                grid[i]['color'] = feedback[i]['color']
-                grid[i]['visible'] = True
-
-        print("Incorrect guess! Try again.")
-
-
-@app.route('/')
-def index():
-    return render_template('index.html', word_length=WORD_LENGTH)
+    elapsed_time = datetime.now() - start_time
+    if attempts == MAX_ATTEMPTS:
+        return jsonify({
+            'message': 'Sorry, you have used all your attempts.',
+            'grid': grid,
+            'elapsed_time': elapsed_time.seconds
+        })
+    elif datetime.now() > end_time:
+        return jsonify({
+            'message': 'Sorry, you ran out of time.',
+            'grid': grid,
+            'elapsed_time': elapsed_time.seconds
+        })
 
 
 if __name__ == '__main__':
-    app.run()
+    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))
