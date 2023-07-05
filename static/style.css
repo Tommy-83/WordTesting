@@ -1,16 +1,60 @@
-body {
+.container {
+    max-width: 800px;
+    margin: 0 auto;
     text-align: center;
 }
 
-.play-button {
-    padding: 10px 20px;
-    font-size: 16px;
-    background-color: #4CAF50;
-    color: white;
-    border: none;
-    cursor: pointer;
+.row {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 10px;
 }
 
-.play-button:hover {
-    background-color: #45a049;
+.cell {
+    width: 30px;
+    height: 30px;
+    margin: 0 5px;
+    border-radius: 3px;
+    font-size: 20px;
+    text-align: center;
+    line-height: 30px;
+}
+
+.visible {
+    background-color: #f5f5f5;
+}
+
+.green {
+    color: #00cc00;
+}
+
+.yellow {
+    color: #cccc00;
+}
+
+.red {
+    color: #cc0000;
+}
+
+#timer {
+    margin-top: 20px;
+}
+
+#message {
+    margin-top: 20px;
+    font-weight: bold;
+}
+
+#guess-input {
+    margin-top: 20px;
+    width: 100px;
+    height: 30px;
+    font-size: 16px;
+    padding: 5px;
+}
+
+#guess-button {
+    margin-top: 10px;
+    font-size: 16px;
+    padding: 5px 10px;
 }
