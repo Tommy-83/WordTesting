@@ -1,6 +1,5 @@
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request
 import random
-import time
 from datetime import datetime, timedelta
 from termcolor import colored
 
@@ -24,6 +23,28 @@ def generate_word():
     return random.choice(word_list)
 
 
+# Function to display the game grid
+def display_grid(grid, elapsed_time, reveal_word):
+    print("    " + " ".join(colored(chr(65+i), 'white') for i in range(WORD_LENGTH)))
+    print("  +" + "---+" * WORD_LENGTH)
+
+    for row in grid:
+        colored_row = []
+        for letter in row:
+            if letter['visible']:
+                colored_row.append(colored(letter['letter'], letter['color'], 'on_grey'))
+            else:
+                colored_row.append(colored("_", 'white', 'on_grey'))
+        print("  | " + " | ".join(colored_row) + " |")
+        print("  +" + "---+" * WORD_LENGTH)
+
+    print()
+    print("Time Elapsed: {} minutes {} seconds".format(elapsed_time.seconds // 60, elapsed_time.seconds % 60))
+
+    if reveal_word:
+        print("The word was:", reveal_word)
+
+
 # Function to check the correctness of the guess
 def check_guess(guess, target_word):
     feedback = []
@@ -37,41 +58,57 @@ def check_guess(guess, target_word):
     return feedback
 
 
-@app.route('/')
-def index():
-    return render_template('index.html')
-
-
-@app.route('/play', methods=['POST'])
-def play():
+# Function to play the game
+def play_game():
     target_word = generate_word()
     attempts = 0
-    grid = []
     start_time = datetime.now()
-    end_time = start_time + timedelta(seconds=TIMER_DURATION)
 
-    while attempts < MAX_ATTEMPTS and datetime.now() <= end_time:
-        elapsed_time = datetime.now() - start_time
+    grid = []
+    for _ in range(WORD_LENGTH):
+        grid.append({'letter': '', 'color': 'white', 'visible': False})
 
-        guess = request.form['guess']
+    while True:
+        display_grid(grid, datetime.now() - start_time, "")
+        guess = input("Enter your guess: ").upper()
+
+        if guess == "QUIT":
+            break
+
+        if guess == "REVEAL":
+            display_grid(grid, datetime.now() - start_time, target_word)
+            break
+
         if len(guess) != WORD_LENGTH:
-            return jsonify({'error': f'Invalid guess. Guess should be {WORD_LENGTH} letters long.'})
-
-        feedback = check_guess(guess, target_word)
-        grid.append(feedback)
-
-        if feedback == [{'letter': guess[i], 'color': 'green', 'visible': True} for i in range(WORD_LENGTH)]:
-            elapsed_time = datetime.now() - start_time
-            return jsonify({'grid': grid, 'message': 'Congratulations! You guessed the word.', 'elapsed_time': elapsed_time.seconds})
+            print("Invalid guess! Guess word should be {} letters long.".format(WORD_LENGTH))
+            continue
 
         attempts += 1
+        feedback = check_guess(guess, target_word)
 
-    elapsed_time = datetime.now() - start_time
-    if attempts == MAX_ATTEMPTS:
-        return jsonify({'grid': grid, 'message': 'Sorry, you have used all your attempts.', 'elapsed_time': elapsed_time.seconds})
-    elif datetime.now() > end_time:
-        return jsonify({'grid': grid, 'message': 'Sorry, you ran out of time.', 'elapsed_time': elapsed_time.seconds})
+        if feedback == [{'letter': guess[i], 'color': 'green', 'visible': True} for i in range(WORD_LENGTH)]:
+            display_grid(grid, datetime.now() - start_time, target_word)
+            print("Congratulations! You guessed the word correctly.")
+            break
+
+        if attempts >= MAX_ATTEMPTS:
+            display_grid(grid, datetime.now() - start_time, target_word)
+            print("You ran out of attempts. Better luck next time!")
+            break
+
+        for i in range(WORD_LENGTH):
+            if not grid[i]['visible']:
+                grid[i]['letter'] = guess[i]
+                grid[i]['color'] = feedback[i]['color']
+                grid[i]['visible'] = True
+
+        print("Incorrect guess! Try again.")
+
+
+@app.route('/')
+def index():
+    return render_template('index.html', word_length=WORD_LENGTH)
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run()

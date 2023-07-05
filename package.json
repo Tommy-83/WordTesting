@@ -16,6 +16,7 @@
   },
   "homepage": "https://github.com/lechien73/terminal#readme",
   "dependencies": {
+    "flask": "^0.2.10",
     "node-pty": "^0.10.1",
     "node-static": "^0.7.11",
     "total4": "^0.0.86"
