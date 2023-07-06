@@ -38,7 +38,7 @@ def check_word():
             response['missed'] += 1
 
     guessed_words.append((word, response))
-    return render_template('index.html', attempts=attempts, guessed_words=guessed_words)
+    return render_template('index.html', attempts=attempts, guessed_words=guessed_words, enumerate=enumerate)
 
 
 if __name__ == '__main__':
