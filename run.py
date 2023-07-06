@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request
 import random
+from jinja2 import Environment
 
 app = Flask(__name__)
 
@@ -10,6 +11,8 @@ words = [
 attempts = 0
 guessed_words = []
 
+env = Environment()
+env.globals.update(enumerate=enumerate)
 
 @app.route('/')
 def index():
