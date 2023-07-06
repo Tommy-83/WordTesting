@@ -7,14 +7,13 @@ words = [
     "apple", "beach", "camel", "dance", "eagle",  # Add more words here...
 ]
 
-target_word = random.choice(words)
 attempts = 0
 guessed_words = []
 
 
 @app.route('/')
 def index():
-    return render_template('index.html', attempts=attempts, guessed_words=guessed_words)
+    return render_template('index.html', attempts=attempts, guessed_words=guessed_words, target_word=target_word)
 
 
 @app.route('/check_word', methods=['POST'])
@@ -38,8 +37,9 @@ def check_word():
             response['missed'] += 1
 
     guessed_words.append((word, response))
-    return render_template('index.html', attempts=attempts, guessed_words=guessed_words, enumerate=enumerate)
+    return render_template('index.html', attempts=attempts, guessed_words=guessed_words, target_word=target_word)
 
 
 if __name__ == '__main__':
+    target_word = random.choice(words)
     app.run(debug=True)
